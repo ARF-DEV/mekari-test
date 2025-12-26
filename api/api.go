@@ -1,18 +1,27 @@
 package api
 
 import (
+	"github.com/arf-dev/mekari-test/config"
+	"github.com/arf-dev/mekari-test/database"
 	"github.com/arf-dev/mekari-test/handler/authhandlr"
 	"github.com/arf-dev/mekari-test/handler/healthhandlr"
+	"github.com/arf-dev/mekari-test/repository/userrepo"
+	"github.com/arf-dev/mekari-test/service/authsv"
 )
 
 type API struct {
-	HealthCheck *healthhandlr.Handler
-	Auth        *authhandlr.Handler
+	HealthCheckHandlr *healthhandlr.Handler
+	AuthHandlr        *authhandlr.Handler
 }
 
-func New() *API {
+func New(config *config.Config, database *database.Database) *API {
+	userRepo := userrepo.New(database)
+	authServ := authsv.New(config, userRepo)
+
+	healthHandlr := healthhandlr.New()
+	authHandlr := authhandlr.New(authServ)
 	return &API{
-		HealthCheck: healthhandlr.New(),
-		Auth:        authhandlr.New(),
+		HealthCheckHandlr: healthHandlr,
+		AuthHandlr:        authHandlr,
 	}
 }

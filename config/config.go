@@ -1,6 +1,7 @@
 package config
 
 type Config struct {
-	PORT      string `mapstructure:"PORT"`
-	DB_MASTER string `mapstructure:"DB_MASTER"`
+	JWT_SECRET string `mapstructure:"JWT_SECRET"`
+	PORT       string `mapstructure:"PORT"`
+	DB_MASTER  string `mapstructure:"DB_MASTER"`
 }

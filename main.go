@@ -20,10 +20,14 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("error when loading the config")
 	}
+	mux, err := router.New(env)
+	if err != nil {
+		log.Fatal().Err(err).Msg("error when initializing mux")
+	}
 
 	server := http.Server{
 		Addr:         ":" + env.PORT,
-		Handler:      router.New(),
+		Handler:      mux,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
