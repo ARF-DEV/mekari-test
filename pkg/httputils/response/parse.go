@@ -2,7 +2,9 @@ package response
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"reflect"
 )
@@ -22,6 +24,9 @@ func ParseRequestBody(r *http.Request, dest any) error {
 		return ErrDestinationNotPointer
 	}
 	if err := json.NewDecoder(r.Body).Decode(dest); err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
 		return err
 	}
 
