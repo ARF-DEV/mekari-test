@@ -3,13 +3,12 @@ package response
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"reflect"
 )
 
-var ErrDestinationNotPointer error = fmt.Errorf("destination MUST be a pointer value")
+var ErrDestinationNotPointer error = errors.New("destination MUST be a pointer value")
 
 // parse request http's request body to the dest object
 // r = pointer http.Request struct

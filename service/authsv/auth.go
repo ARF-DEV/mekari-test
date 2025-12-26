@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -16,10 +15,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// define service needs in interface
-type UserRepository interface {
-	SelectOneUser(ctx context.Context, email string) (model.User, error)
-}
 type Service struct {
 	config   *config.Config
 	userRepo UserRepository
@@ -35,7 +30,6 @@ func New(config *config.Config, userRepo UserRepository) *Service {
 // if user exists, then create token
 // otherwise, return error
 func (service *Service) AuthenticateUser(ctx context.Context, req model.LoginRequest) (token string, err error) {
-	fmt.Println(req)
 	user, err := service.userRepo.SelectOneUser(ctx, req.Email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -53,13 +47,10 @@ func (service *Service) AuthenticateUser(ctx context.Context, req model.LoginReq
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			Issuer:    "test",
-			Subject:   "somebody",
-			ID:        "1",
-			Audience:  []string{"somebody_else"},
+			Issuer:    "ems-api",
+			Subject:   "ems-fe",
 		},
 	}
-
 	token, err = authentication.GenerateToken(service.config.JWT_SECRET, claims)
 	if err != nil {
 		log.Log().Err(err).Msg("error when generating token")
