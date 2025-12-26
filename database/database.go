@@ -1,6 +1,8 @@
 package database
 
 import (
+	"context"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -18,6 +20,11 @@ func New(url string) (*Database, error) {
 		db: db,
 	}, nil
 }
+func (manager *Database) QueryRow(ctx context.Context, query string, args ...any) *sqlx.Row {
+	return manager.db.QueryRowxContext(ctx, query, args...)
+}
 
 type Querier interface {
+	QueryRow(ctx context.Context, query string, args ...any) *sqlx.Row
+	// Query(ctx context.Context, query string, args ...any) (*sqlx.Rows, error)
 }
