@@ -28,7 +28,7 @@ func Send(w http.ResponseWriter, message string, body ResponseBody, err error) {
 	}
 	base := body.Base()
 	if err != nil {
-		if apiErr, ok := err.(*apierror.APIError); ok {
+		if apiErr, ok := err.(apierror.APIError); ok {
 			message = apiErr.Message
 			code = apiErr.Code
 			statusCode = apiErr.StatusCode
