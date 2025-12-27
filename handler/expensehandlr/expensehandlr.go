@@ -45,7 +45,7 @@ func (handler *Handler) HandleCreateExpense(w http.ResponseWriter, r *http.Reque
 
 	response.Send(
 		w,
-		"Expense Created",
+		"Expense created",
 		&model.CreateExpenseResponse{
 			Data: expenseId,
 		},
@@ -84,4 +84,25 @@ func (handler *Handler) HandleGetExpenseList(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	response.Send(w, "Success", &resp, nil)
+}
+
+func (handler *Handler) HandleUpdateExpense(w http.ResponseWriter, r *http.Request) {
+	req := model.UpdateExpenseRequest{}
+	if err := request.ParsePathParam(r, &req); err != nil {
+		log.Log().Err(err).Msg("error when parsing UpdateExpenseRequest")
+		response.Send(w, "", nil, apierror.ErrBadRequest)
+		return
+	}
+
+	if err := validate.ValidateStruct(req); err != nil {
+		log.Log().Err(err).Msg("validation error on HandleUpdateExpense")
+		response.Send(w, "", nil, apierror.ErrBadRequest)
+		return
+	}
+
+	if err := handler.expenseServ.UpdateExpense(r.Context(), req); err != nil {
+		response.Send(w, "", nil, err)
+		return
+	}
+	response.Send(w, "Expense updated", nil, nil)
 }

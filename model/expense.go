@@ -39,11 +39,17 @@ type GetExpenseResponse struct {
 }
 
 type GetExpenseListRequest struct {
-	Page int64 `schema:"page"`
-	Size int64 `schema:"size"`
+	Page   int64  `schema:"page"`
+	Size   int64  `schema:"size"`
+	Status string `schema:"status" validate:"oneof=pending approved rejected auto-approved"`
 }
 
 type GetExpenseListResponse struct {
 	response.BaseResponse
 	Data []Expense `json:"data"`
+}
+
+type UpdateExpenseRequest struct {
+	Id     int32  `path:"id"`
+	Status string `path:"status" validate:"required,oneof=reject approve"`
 }

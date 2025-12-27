@@ -6,6 +6,5 @@ create table if not exists expenses (
     receipt_url text not null,
     status varchar(50) not null,
     submitted_at timestamp with time zone not null,
-    processed_at timestamp with time zone not null,
-    is_auto_approved boolean not null default false
+    processed_at timestamp with time zone not null
 )

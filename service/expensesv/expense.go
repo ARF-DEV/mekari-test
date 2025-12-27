@@ -36,7 +36,7 @@ func (service *Service) GetExpense(ctx context.Context, req model.GetExpenseRequ
 		if errors.Is(err, sql.ErrNoRows) {
 			return resp, apierror.ErrResourceNotFound
 		}
-		log.Log().Err(err).Msg("error on SelectOneExpense")
+		log.Log().Err(err).Msg("error on GetExpense.SelectOneExpense")
 		return resp, apierror.ErrInternalServer
 	}
 	resp.Data = expense
@@ -44,12 +44,12 @@ func (service *Service) GetExpense(ctx context.Context, req model.GetExpenseRequ
 }
 
 func (service *Service) GetExpenseList(ctx context.Context, req model.GetExpenseListRequest) (resp model.GetExpenseListResponse, err error) {
-	expenses, err := service.expenseRepo.SelectExpense(ctx, req.Page, req.Size)
+	expenses, err := service.expenseRepo.SelectExpense(ctx, req.Page, req.Size, req.Status)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return resp, apierror.ErrResourceNotFound
 		}
-		log.Log().Err(err).Msg("error on SelectExpense")
+		log.Log().Err(err).Msg("error on GetExpenseList.SelectExpense")
 		return resp, apierror.ErrInternalServer
 	}
 	resp.Data = expenses
@@ -59,7 +59,7 @@ func (service *Service) GetExpenseList(ctx context.Context, req model.GetExpense
 func (service *Service) CreateExpense(ctx context.Context, req model.CreateExpenseRequest) (int32, error) {
 	userData := ctxutils.GetUserDataFromCtx(ctx)
 	userId := userData.UserId
-	status := "awaiting-approval"
+	status := "pending"
 	isAutoApproved := false
 	if req.AmountIdr < 1000000 {
 		status = "approved"
@@ -80,38 +80,69 @@ func (service *Service) CreateExpense(ctx context.Context, req model.CreateExpen
 		},
 	)
 	if err != nil {
+		log.Log().Err(err).Msgf("error on CreateExpense.Insert")
 		return 0, err
 	}
 
 	if isAutoApproved {
-		go func(expenseId int32) {
-			noCancelCtx := context.WithoutCancel(ctx)
-			err := service.doPayment(noCancelCtx, model.PaymentRequest{
-				Amount:     req.AmountIdr,
-				ExternalId: uuid.NewString(),
-			})
-			if err != nil {
-				log.Log().Err(err).Msgf("error when doing payment to a 3rd party for expense with id %d", expenseId)
-				return
-			}
-
-			if err = service.expenseRepo.Update(
-				noCancelCtx,
-				expenseId,
-				func(expense *model.Expense) {
-					expense.Status = "completed"
-					expense.ProcessedAt = time.Now()
-				},
-			); err != nil {
-				log.Log().Err(err).Msgf("error when updating expense with id %d", expenseId)
-				return
-			}
-		}(expenseId)
+		go service.processedPayment(ctx, expenseId, req.AmountIdr)
 	}
 
 	return expenseId, nil
 }
 
+func (service *Service) UpdateExpense(ctx context.Context, req model.UpdateExpenseRequest) error {
+	status := ""
+	switch req.Status {
+	case "reject":
+		status = "rejected"
+	case "approve":
+		status = "approved"
+	default:
+		log.Log().Msgf("cannot update expense to status=%s", req.Status)
+		return apierror.ErrBadRequest
+	}
+	expense, err := service.expenseRepo.SelectOneExpense(ctx, req.Id)
+	if err != nil {
+		log.Log().Err(err).Msgf("error on UpdateExpense.SelectOneExpense")
+		return err
+	}
+
+	if err = service.expenseRepo.Update(ctx, req.Id, func(expense *model.Expense) {
+		expense.Status = status
+	}); err != nil {
+		log.Log().Err(err).Msgf("error on UpdateExpense.Update")
+		return err
+	}
+
+	if status == "approved" {
+		go service.processedPayment(ctx, expense.Id, expense.AmountIdr)
+	}
+	return err
+}
+
+func (service *Service) processedPayment(ctx context.Context, expenseId int32, amount int64) {
+	noCancelCtx := context.WithoutCancel(ctx)
+	err := service.doPayment(noCancelCtx, model.PaymentRequest{
+		Amount:     amount,
+		ExternalId: uuid.NewString(),
+	})
+	if err != nil {
+		log.Log().Err(err).Msgf("error when doing payment to a 3rd party for expense with id %d", expenseId)
+		return
+	}
+	if err = service.expenseRepo.Update(
+		noCancelCtx,
+		expenseId,
+		func(expense *model.Expense) {
+			expense.Status = "completed"
+			expense.ProcessedAt = time.Now()
+		},
+	); err != nil {
+		log.Log().Err(err).Msgf("error when updating expense with id %d", expenseId)
+		return
+	}
+}
 func (service *Service) doPayment(ctx context.Context, paymentRequest model.PaymentRequest) error {
 	const (
 		max_retry int           = 2
@@ -152,7 +183,7 @@ func (service *Service) doPayment(ctx context.Context, paymentRequest model.Paym
 			return fmt.Errorf("unexpected status: %s", resp.Status)
 		}
 
-		// if successfull then break out of retry
+		// if successful then break out of retry
 		break
 	}
 	return nil

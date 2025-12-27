@@ -36,6 +36,7 @@ func New(config *config.Config) (*chi.Mux, error) {
 
 			r.Get("/expenses", api.ExpenseHandlr.HandleGetExpenseList)
 			r.Get("/expenses/{id}", api.ExpenseHandlr.HandleGetExpense)
+			r.Put("/expenses/{id}/{status}", api.ExpenseHandlr.HandleUpdateExpense)
 			r.Post("/expenses", api.ExpenseHandlr.HandleCreateExpense)
 
 			r.Group(func(r chi.Router) {

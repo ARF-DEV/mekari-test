@@ -83,7 +83,7 @@ func (repo *Repository) SelectOneExpense(ctx context.Context, id int32) (expense
 	return
 }
 
-func (repo *Repository) SelectExpense(ctx context.Context, page, size int64) (expenses []model.Expense, err error) {
+func (repo *Repository) SelectExpense(ctx context.Context, page, size int64, status string) (expenses []model.Expense, err error) {
 	builder := squirrel.Select(
 		"id",
 		"user_id",
@@ -98,6 +98,9 @@ func (repo *Repository) SelectExpense(ctx context.Context, page, size int64) (ex
 	builder = builder.OrderBy("submitted_at desc")
 	builder = builder.Offset(uint64((page - 1) * size))
 	builder = builder.Limit(uint64(size))
+	if status != "" {
+		builder = builder.Where("status = ?", status)
+	}
 
 	query, args, err := builder.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
