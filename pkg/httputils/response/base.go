@@ -28,11 +28,13 @@ func Send(w http.ResponseWriter, message string, body ResponseBody, err error) {
 	}
 	base := body.Base()
 	if err != nil {
-		if apiErr, ok := err.(apierror.APIError); ok {
-			message = apiErr.Message
-			code = apiErr.Code
-			statusCode = apiErr.StatusCode
+		apiErr, ok := err.(apierror.APIError)
+		if !ok {
+			apiErr = apierror.ErrInternalServer
 		}
+		message = apiErr.Message
+		code = apiErr.Code
+		statusCode = apiErr.StatusCode
 	}
 	base.Message = message
 	base.Code = code

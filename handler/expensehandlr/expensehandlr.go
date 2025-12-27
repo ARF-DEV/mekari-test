@@ -7,6 +7,7 @@ import (
 	"github.com/arf-dev/mekari-test/pkg/httputils/apierror"
 	"github.com/arf-dev/mekari-test/pkg/httputils/request"
 	"github.com/arf-dev/mekari-test/pkg/httputils/response"
+	"github.com/arf-dev/mekari-test/pkg/validate"
 	"github.com/arf-dev/mekari-test/service/expensesv"
 	"github.com/rs/zerolog/log"
 )
@@ -22,15 +23,22 @@ func New(expenseServ *expensesv.Service) *Handler {
 }
 
 func (handler *Handler) HandleCreateExpense(w http.ResponseWriter, r *http.Request) {
-	// TODO: validations
 	req := model.CreateExpenseRequest{}
 	if err := request.ParseRequestBody(r, &req); err != nil {
 		log.Log().Err(err).Msg("error when parsing CreateExpenseRequest")
 		response.Send(w, "", nil, apierror.ErrBadRequest)
 		return
 	}
+
+	if err := validate.ValidateStruct(req); err != nil {
+		log.Log().Err(err).Msg("validation error on HandleCreateExpense")
+		response.Send(w, "", nil, apierror.ErrBadRequest)
+		return
+	}
+
 	expenseId, err := handler.expenseServ.CreateExpense(r.Context(), req)
 	if err != nil {
+		log.Log().Err(err).Msg("error on CreateExpense")
 		response.Send(w, "", nil, err)
 		return
 	}
@@ -46,7 +54,6 @@ func (handler *Handler) HandleCreateExpense(w http.ResponseWriter, r *http.Reque
 }
 
 func (handler *Handler) HandleGetExpense(w http.ResponseWriter, r *http.Request) {
-	// TODO: validations
 	req := model.GetExpenseRequest{}
 	if err := request.ParsePathParam(r, &req); err != nil {
 		log.Log().Err(err).Msg("error when parsing GetExpenseRequest")
@@ -64,7 +71,6 @@ func (handler *Handler) HandleGetExpense(w http.ResponseWriter, r *http.Request)
 }
 
 func (handler *Handler) HandleGetExpenseList(w http.ResponseWriter, r *http.Request) {
-	// TODO validations
 	req := model.GetExpenseListRequest{}
 	if err := request.ParseQueryParam(r, &req); err != nil {
 		log.Log().Err(err).Msg("error when parsing GetExpenseListRequest")

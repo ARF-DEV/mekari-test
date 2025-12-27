@@ -65,7 +65,7 @@ func ParsePathParam(r *http.Request, dest any) error {
 			return fmt.Errorf("path param '%v' not found", pathName)
 		}
 		switch field.Kind() {
-		case reflect.Int64:
+		case reflect.Int64, reflect.Int32, reflect.Int, reflect.Int16, reflect.Int8:
 			iValue, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
 				return fmt.Errorf("failed to convert value from path '%v', value=%v", pathName, value)

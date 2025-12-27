@@ -18,12 +18,9 @@ type Expense struct {
 }
 
 type CreateExpenseRequest struct {
-	UserId      int32     `json:"user_id"`
-	AmountIdr   int64     `json:"amount_idr"`
-	Description string    `json:"description"`
-	ReceiptUrl  string    `json:"receipt_url"`
-	SubmittedAt time.Time `json:"submitted_at"`
-	ProcessedAt time.Time `json:"processed_at"`
+	AmountIdr   int64  `json:"amount_idr" validate:"required,gte=10000,lte=50000000"`
+	Description string `json:"description" validate:"required"`
+	ReceiptUrl  string `json:"receipt_url"`
 }
 
 type CreateExpenseResponse struct {
