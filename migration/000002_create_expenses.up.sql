@@ -4,7 +4,8 @@ create table if not exists expenses (
     amount_idr bigint not null,
     description text not null,
     receipt_url text not null,
-    status varchar(7) not null,
+    status varchar(50) not null,
     submitted_at timestamp with time zone not null,
-    processed_at timestamp with time zone not null
+    processed_at timestamp with time zone not null,
+    is_auto_approved boolean not null default false
 )
