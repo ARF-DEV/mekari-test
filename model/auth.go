@@ -16,7 +16,7 @@ type LoginResponse struct {
 }
 
 type User struct {
-	Id        string    `db:"id"`
+	Id        int32     `db:"id"`
 	Email     string    `db:"email"`
 	Name      string    `db:"name"`
 	Role      string    `db:"role"`

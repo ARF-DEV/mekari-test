@@ -4,8 +4,9 @@ import "context"
 
 type userDataKey struct{}
 type UserData struct {
-	Email string
-	Role  string
+	UserId int32
+	Email  string
+	Role   string
 }
 
 func CtxWithUserData(ctx context.Context, data UserData) context.Context {

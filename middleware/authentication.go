@@ -40,8 +40,9 @@ func (m *Middleware) Authenticate(next http.Handler) http.Handler {
 			ctxutils.CtxWithUserData(
 				r.Context(),
 				ctxutils.UserData{
-					Email: claims.Email,
-					Role:  claims.Role,
+					Email:  claims.Email,
+					Role:   claims.Role,
+					UserId: claims.UserId,
 				},
 			),
 		)

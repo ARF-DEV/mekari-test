@@ -4,9 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/arf-dev/mekari-test/model"
+	"github.com/arf-dev/mekari-test/pkg/ctxutils"
 	"github.com/arf-dev/mekari-test/pkg/httputils/apierror"
+	"github.com/rs/zerolog/log"
 )
 
 type Service struct {
@@ -21,18 +24,24 @@ func New(expenseRepo ExpenseRepository) *Service {
 
 func (service *Service) CreateExpense(ctx context.Context, req model.CreateExpenseRequest) (int32, error) {
 	// TODO: Auto-approval logic
-	// TODO: hit 3rd party api for auto-approval case
+	userData := ctxutils.GetUserDataFromCtx(ctx)
+	userId := userData.UserId
 	status := "pending"
+	if req.AmountIdr < 1000000 {
+		status = "approved"
+		// TODO: hit 3rd party api for auto-approval case
+	}
+
 	return service.expenseRepo.Insert(
 		ctx,
 		model.Expense{
-			UserId:      req.UserId,
+			UserId:      userId,
 			AmountIdr:   req.AmountIdr,
 			Description: req.Description,
 			ReceiptUrl:  req.ReceiptUrl,
 			Status:      status,
-			SubmittedAt: req.SubmittedAt,
-			ProcessedAt: req.ProcessedAt,
+			SubmittedAt: time.Now(),
+			ProcessedAt: time.Time{}, // zero
 		},
 	)
 }
@@ -43,6 +52,7 @@ func (service *Service) GetExpense(ctx context.Context, req model.GetExpenseRequ
 		if errors.Is(err, sql.ErrNoRows) {
 			return resp, apierror.ErrResourceNotFound
 		}
+		log.Log().Err(err).Msg("error on SelectOneExpense")
 		return resp, apierror.ErrInternalServer
 	}
 	resp.Data = expense
@@ -55,6 +65,7 @@ func (service *Service) GetExpenseList(ctx context.Context, req model.GetExpense
 		if errors.Is(err, sql.ErrNoRows) {
 			return resp, apierror.ErrResourceNotFound
 		}
+		log.Log().Err(err).Msg("error on SelectExpense")
 		return resp, apierror.ErrInternalServer
 	}
 	resp.Data = expenses

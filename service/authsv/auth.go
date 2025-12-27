@@ -40,8 +40,9 @@ func (service *Service) AuthenticateUser(ctx context.Context, req model.LoginReq
 	}
 
 	claims := authentication.Claims{
-		Email: user.Email,
-		Role:  user.Role,
+		Email:  user.Email,
+		Role:   user.Role,
+		UserId: user.Id,
 		RegisteredClaims: jwt.RegisteredClaims{
 			// A usual scenario is to set the expiration time relative to the current time
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),

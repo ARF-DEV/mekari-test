@@ -38,7 +38,7 @@ func (repo *Repository) Insert(ctx context.Context, newExpense model.Expense) (i
 			newExpense.SubmittedAt,
 			newExpense.ProcessedAt,
 		)
-	builder = builder.Prefix(
+	builder = builder.Suffix(
 		"RETURNING id",
 	)
 
@@ -93,7 +93,7 @@ func (repo *Repository) SelectExpense(ctx context.Context, page, size int64) (ex
 		"processed_at",
 	).
 		From("expenses")
-	builder = builder.OrderBy("created_at desc")
+	builder = builder.OrderBy("submitted_at desc")
 	builder = builder.Offset(uint64((page - 1) * size))
 	builder = builder.Limit(uint64(size))
 
