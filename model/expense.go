@@ -7,15 +7,14 @@ import (
 )
 
 type Expense struct {
-	Id             int32     `db:"id" json:"id"`
-	UserId         int32     `db:"user_id" json:"user_id"`
-	AmountIdr      int64     `db:"amount_idr" json:"amount_idr"`
-	Description    string    `db:"description" json:"description"`
-	ReceiptUrl     string    `db:"receipt_url" json:"receipt_url"`
-	Status         string    `db:"status" json:"status"`
-	SubmittedAt    time.Time `db:"submitted_at" json:"submitted_at"`
-	ProcessedAt    time.Time `db:"processed_at" json:"processed_at"`
-	IsAutoApproved bool      `db:"is_auto_approved" json:"-"`
+	Id          int32     `db:"id" json:"id"`
+	UserId      int32     `db:"user_id" json:"user_id"`
+	AmountIdr   int64     `db:"amount_idr" json:"amount_idr"`
+	Description string    `db:"description" json:"description"`
+	ReceiptUrl  string    `db:"receipt_url" json:"receipt_url"`
+	Status      string    `db:"status" json:"status"`
+	SubmittedAt time.Time `db:"submitted_at" json:"submitted_at"`
+	ProcessedAt time.Time `db:"processed_at" json:"processed_at"`
 }
 
 type CreateExpenseRequest struct {
@@ -26,7 +25,16 @@ type CreateExpenseRequest struct {
 
 type CreateExpenseResponse struct {
 	response.BaseResponse
-	Data int32 `json:"data"`
+	Data CreateExpenseResponseData `json:"data"`
+}
+
+type CreateExpenseResponseData struct {
+	Id               int32  `json:"id"`
+	AmountIdr        int64  `json:"amount_idr"`
+	Description      string `json:"description"`
+	Status           string `json:"status"`
+	RequiresApproval bool   `json:"requires_approval"`
+	AutoApproved     bool   `json:"auto_approved"`
 }
 
 type GetExpenseRequest struct {

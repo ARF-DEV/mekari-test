@@ -60,40 +60,48 @@ func (service *Service) GetExpenseList(ctx context.Context, req model.GetExpense
 	return resp, nil
 }
 
-func (service *Service) CreateExpense(ctx context.Context, req model.CreateExpenseRequest) (int32, error) {
+func (service *Service) CreateExpense(ctx context.Context, req model.CreateExpenseRequest) (model.CreateExpenseResponseData, error) {
 	userData := ctxutils.GetUserDataFromCtx(ctx)
 	userId := userData.UserId
 	status := "pending"
 	isAutoApproved := false
+	now := timeNow()
+	processedAt := time.Time{} // zero value
 	if req.AmountIdr < 1000000 {
 		status = "approved"
 		isAutoApproved = true
+		processedAt = now
 	}
 
-	now := timeNow()
-	expenseId, err := service.expenseRepo.Insert(
+	expense, err := service.expenseRepo.Insert(
 		ctx,
 		model.Expense{
-			UserId:         userId,
-			AmountIdr:      req.AmountIdr,
-			Description:    req.Description,
-			ReceiptUrl:     req.ReceiptUrl,
-			Status:         status,
-			SubmittedAt:    now,
-			ProcessedAt:    now,
-			IsAutoApproved: isAutoApproved,
+			UserId:      userId,
+			AmountIdr:   req.AmountIdr,
+			Description: req.Description,
+			ReceiptUrl:  req.ReceiptUrl,
+			Status:      status,
+			SubmittedAt: now,
+			ProcessedAt: processedAt,
 		},
 	)
 	if err != nil {
 		log.Log().Err(err).Msgf("error on CreateExpense.Insert")
-		return 0, err
+		return model.CreateExpenseResponseData{}, err
 	}
 
 	if isAutoApproved {
-		go service.processedPayment(ctx, expenseId, req.AmountIdr)
+		go service.processedPayment(ctx, expense.Id, expense.AmountIdr)
 	}
 
-	return expenseId, nil
+	return model.CreateExpenseResponseData{
+		Id:               expense.Id,
+		AmountIdr:        expense.AmountIdr,
+		Description:      expense.Description,
+		Status:           expense.Status,
+		RequiresApproval: !isAutoApproved,
+		AutoApproved:     isAutoApproved,
+	}, nil
 }
 
 func (service *Service) UpdateExpense(ctx context.Context, req model.UpdateExpenseRequest) error {

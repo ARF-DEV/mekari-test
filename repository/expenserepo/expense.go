@@ -18,7 +18,7 @@ func New(querier database.Querier) *Repository {
 	}
 }
 
-func (repo *Repository) Insert(ctx context.Context, newExpense model.Expense) (id int32, err error) {
+func (repo *Repository) Insert(ctx context.Context, newExpense model.Expense) (expense model.Expense, err error) {
 	builder := squirrel.Insert("expenses").
 		Columns(
 			"user_id",
@@ -28,7 +28,6 @@ func (repo *Repository) Insert(ctx context.Context, newExpense model.Expense) (i
 			"status",
 			"submitted_at",
 			"processed_at",
-			"is_auto_approved",
 		).
 		Values(
 			newExpense.UserId,
@@ -38,19 +37,18 @@ func (repo *Repository) Insert(ctx context.Context, newExpense model.Expense) (i
 			newExpense.Status,
 			newExpense.SubmittedAt,
 			newExpense.ProcessedAt,
-			newExpense.IsAutoApproved,
 		)
 	builder = builder.Suffix(
-		"RETURNING id",
+		"RETURNING id, user_id, amount_idr, description, receipt_url, status, submitted_at, processed_at",
 	)
 
 	query, args, err := builder.PlaceholderFormat(squirrel.Dollar).ToSql()
 	if err != nil {
-		return id, err
+		return expense, err
 	}
 
-	if err := repo.querier.QueryRow(ctx, query, args...).Scan(&id); err != nil {
-		return id, err
+	if err := repo.querier.QueryRow(ctx, query, args...).StructScan(&expense); err != nil {
+		return expense, err
 	}
 
 	return
