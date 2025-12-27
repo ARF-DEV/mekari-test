@@ -7,14 +7,15 @@ import (
 )
 
 type Expense struct {
-	Id          int32     `db:"id" json:"id"`
-	UserId      int32     `db:"user_id" json:"user_id"`
-	AmountIdr   int64     `db:"amount_idr" json:"amount_idr"`
-	Description string    `db:"description" json:"description"`
-	ReceiptUrl  string    `db:"receipt_url" json:"receipt_url"`
-	Status      string    `db:"status" json:"status"`
-	SubmittedAt time.Time `db:"submitted_at" json:"submitted_at"`
-	ProcessedAt time.Time `db:"processed_at" json:"processed_at"`
+	Id             int32     `db:"id" json:"id"`
+	UserId         int32     `db:"user_id" json:"user_id"`
+	AmountIdr      int64     `db:"amount_idr" json:"amount_idr"`
+	Description    string    `db:"description" json:"description"`
+	ReceiptUrl     string    `db:"receipt_url" json:"receipt_url"`
+	Status         string    `db:"status" json:"status"`
+	SubmittedAt    time.Time `db:"submitted_at" json:"submitted_at"`
+	ProcessedAt    time.Time `db:"processed_at" json:"processed_at"`
+	IsAutoApproved bool      `db:"is_auto_approved" json:"-"`
 }
 
 type CreateExpenseRequest struct {

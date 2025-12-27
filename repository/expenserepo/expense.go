@@ -28,6 +28,7 @@ func (repo *Repository) Insert(ctx context.Context, newExpense model.Expense) (i
 			"status",
 			"submitted_at",
 			"processed_at",
+			"is_auto_approved",
 		).
 		Values(
 			newExpense.UserId,
@@ -37,6 +38,7 @@ func (repo *Repository) Insert(ctx context.Context, newExpense model.Expense) (i
 			newExpense.Status,
 			newExpense.SubmittedAt,
 			newExpense.ProcessedAt,
+			newExpense.IsAutoApproved,
 		)
 	builder = builder.Suffix(
 		"RETURNING id",
@@ -116,4 +118,34 @@ func (repo *Repository) SelectExpense(ctx context.Context, page, size int64) (ex
 		expenses = append(expenses, expense)
 	}
 	return
+}
+
+func (repo *Repository) Update(ctx context.Context, id int32, updateFunc func(expense *model.Expense)) error {
+	expense, err := repo.SelectOneExpense(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	updateFunc(&expense)
+
+	builder := squirrel.Update("expenses").SetMap(
+		map[string]interface{}{
+			"amount_idr":   expense.AmountIdr,
+			"description":  expense.Description,
+			"receipt_url":  expense.ReceiptUrl,
+			"status":       expense.Status,
+			"submitted_at": expense.SubmittedAt,
+			"processed_at": expense.ProcessedAt,
+		},
+	).Where("id = ?", id)
+
+	query, args, err := builder.PlaceholderFormat(squirrel.Dollar).ToSql()
+	if err != nil {
+		return err
+	}
+
+	if _, err := repo.querier.Exec(ctx, query, args...); err != nil {
+		return err
+	}
+	return nil
 }

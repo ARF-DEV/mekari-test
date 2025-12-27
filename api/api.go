@@ -23,7 +23,7 @@ func New(config *config.Config, database *database.Database) *API {
 	expenseRepo := expenserepo.New(database)
 
 	authServ := authsv.New(config, userRepo)
-	expensServ := expensesv.New(expenseRepo)
+	expensServ := expensesv.New(config, expenseRepo)
 
 	healthHandlr := healthhandlr.New()
 	authHandlr := authhandlr.New(authServ)
