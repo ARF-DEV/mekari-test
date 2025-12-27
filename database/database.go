@@ -23,8 +23,11 @@ func New(url string) (*Database, error) {
 func (manager *Database) QueryRow(ctx context.Context, query string, args ...any) *sqlx.Row {
 	return manager.db.QueryRowxContext(ctx, query, args...)
 }
+func (manager *Database) Query(ctx context.Context, query string, args ...any) (*sqlx.Rows, error) {
+	return manager.db.QueryxContext(ctx, query, args...)
+}
 
 type Querier interface {
 	QueryRow(ctx context.Context, query string, args ...any) *sqlx.Row
-	// Query(ctx context.Context, query string, args ...any) (*sqlx.Rows, error)
+	Query(ctx context.Context, query string, args ...any) (*sqlx.Rows, error)
 }

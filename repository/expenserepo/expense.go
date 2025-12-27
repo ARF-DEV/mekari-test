@@ -80,3 +80,40 @@ func (repo *Repository) SelectOneExpense(ctx context.Context, id int32) (expense
 
 	return
 }
+
+func (repo *Repository) SelectExpense(ctx context.Context, page, size int64) (expenses []model.Expense, err error) {
+	builder := squirrel.Select(
+		"id",
+		"user_id",
+		"amount_idr",
+		"description",
+		"receipt_url",
+		"status",
+		"submitted_at",
+		"processed_at",
+	).
+		From("expenses")
+	builder = builder.OrderBy("created_at desc")
+	builder = builder.Offset(uint64((page - 1) * size))
+	builder = builder.Limit(uint64(size))
+
+	query, args, err := builder.PlaceholderFormat(squirrel.Dollar).ToSql()
+	if err != nil {
+		return expenses, err
+	}
+
+	rows, err := repo.querier.Query(ctx, query, args...)
+	if err != nil {
+		return expenses, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var expense model.Expense
+		if err = rows.StructScan(&expense); err != nil {
+			return expenses, err
+		}
+		expenses = append(expenses, expense)
+	}
+	return
+}

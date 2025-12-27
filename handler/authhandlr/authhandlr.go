@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/arf-dev/mekari-test/model"
+	"github.com/arf-dev/mekari-test/pkg/httputils/request"
 	"github.com/arf-dev/mekari-test/pkg/httputils/response"
 	"github.com/arf-dev/mekari-test/service/authsv"
 	"github.com/rs/zerolog/log"
@@ -18,7 +19,7 @@ func New(authServ *authsv.Service) *Handler {
 }
 func (handler *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	req := model.LoginRequest{}
-	if err := response.ParseRequestBody(r, &req); err != nil {
+	if err := request.ParseRequestBody(r, &req); err != nil {
 		log.Log().Err(err).Msg("error when parsing body")
 		response.Send(w, "error", nil, err)
 		return

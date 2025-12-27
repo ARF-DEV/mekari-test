@@ -26,4 +26,19 @@ var (
 		StatusCode: http.StatusUnauthorized,
 		Message:    "Unauthorized",
 	}
+	ErrBadRequest APIError = APIError{
+		Code:       "bad_request",
+		StatusCode: http.StatusBadRequest,
+		Message:    "Bad Request",
+	}
+	ErrInternalServer APIError = APIError{
+		Code:       "internal_server_error",
+		StatusCode: http.StatusInternalServerError,
+		Message:    "Internal Server Error",
+	}
+	ErrResourceNotFound APIError = APIError{
+		Code:       "resource_not_found",
+		StatusCode: http.StatusNotFound,
+		Message:    "Resource Not Found",
+	}
 )
