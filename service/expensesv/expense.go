@@ -118,6 +118,7 @@ func (service *Service) doPayment(ctx context.Context, paymentRequest model.Paym
 		timeoff   time.Duration = time.Second * 5
 	)
 	retryCount := max_retry
+	retryTimeoff := timeoff
 	for ; retryCount > 0; retryCount-- {
 		paymentEndpoint := service.config.PAYMENT_GATEWAY_URL + "/v1/payments"
 		requestBody, _ := json.Marshal(paymentRequest)
@@ -144,6 +145,8 @@ func (service *Service) doPayment(ctx context.Context, paymentRequest model.Paym
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 			if resp.StatusCode == 429 || resp.StatusCode == 0 || (resp.StatusCode >= 500 && resp.StatusCode != 501) {
 				// retry if status code is 429, 0, or >= 500 expect 501
+				time.Sleep(retryTimeoff)
+				retryTimeoff *= 2
 				continue
 			}
 			return fmt.Errorf("unexpected status: %s", resp.Status)
