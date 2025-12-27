@@ -18,15 +18,19 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var timeNow = time.Now
+
 type Service struct {
-	config      *config.Config
-	expenseRepo ExpenseRepository
+	config       *config.Config
+	expenseRepo  ExpenseRepository
+	approvalRepo ApprovalRepository
 }
 
-func New(config *config.Config, expenseRepo ExpenseRepository) *Service {
+func New(config *config.Config, expenseRepo ExpenseRepository, approvalRepo ApprovalRepository) *Service {
 	return &Service{
-		config:      config,
-		expenseRepo: expenseRepo,
+		config:       config,
+		expenseRepo:  expenseRepo,
+		approvalRepo: approvalRepo,
 	}
 }
 
@@ -66,6 +70,7 @@ func (service *Service) CreateExpense(ctx context.Context, req model.CreateExpen
 		isAutoApproved = true
 	}
 
+	now := timeNow()
 	expenseId, err := service.expenseRepo.Insert(
 		ctx,
 		model.Expense{
@@ -74,8 +79,8 @@ func (service *Service) CreateExpense(ctx context.Context, req model.CreateExpen
 			Description:    req.Description,
 			ReceiptUrl:     req.ReceiptUrl,
 			Status:         status,
-			SubmittedAt:    time.Now(),
-			ProcessedAt:    time.Time{}, // zero value
+			SubmittedAt:    now,
+			ProcessedAt:    now,
 			IsAutoApproved: isAutoApproved,
 		},
 	)
@@ -92,6 +97,8 @@ func (service *Service) CreateExpense(ctx context.Context, req model.CreateExpen
 }
 
 func (service *Service) UpdateExpense(ctx context.Context, req model.UpdateExpenseRequest) error {
+	userData := ctxutils.GetUserDataFromCtx(ctx)
+
 	status := ""
 	switch req.Status {
 	case "reject":
@@ -102,6 +109,7 @@ func (service *Service) UpdateExpense(ctx context.Context, req model.UpdateExpen
 		log.Log().Msgf("cannot update expense to status=%s", req.Status)
 		return apierror.ErrBadRequest
 	}
+
 	expense, err := service.expenseRepo.SelectOneExpense(ctx, req.Id)
 	if err != nil {
 		log.Log().Err(err).Msgf("error on UpdateExpense.SelectOneExpense")
@@ -110,8 +118,20 @@ func (service *Service) UpdateExpense(ctx context.Context, req model.UpdateExpen
 
 	if err = service.expenseRepo.Update(ctx, req.Id, func(expense *model.Expense) {
 		expense.Status = status
+		expense.ProcessedAt = timeNow()
 	}); err != nil {
 		log.Log().Err(err).Msgf("error on UpdateExpense.Update")
+		return err
+	}
+
+	if _, err = service.approvalRepo.Insert(ctx, model.Approval{
+		ExpenseId:  expense.Id,
+		ApproverId: userData.UserId,
+		Status:     status,
+		CreatedAt:  timeNow(),
+		Notes:      req.Notes,
+	}); err != nil {
+		log.Log().Err(err).Msgf("error on UpdateExpense.Insert")
 		return err
 	}
 
@@ -129,17 +149,6 @@ func (service *Service) processedPayment(ctx context.Context, expenseId int32, a
 	})
 	if err != nil {
 		log.Log().Err(err).Msgf("error when doing payment to a 3rd party for expense with id %d", expenseId)
-		return
-	}
-	if err = service.expenseRepo.Update(
-		noCancelCtx,
-		expenseId,
-		func(expense *model.Expense) {
-			expense.Status = "completed"
-			expense.ProcessedAt = time.Now()
-		},
-	); err != nil {
-		log.Log().Err(err).Msgf("error when updating expense with id %d", expenseId)
 		return
 	}
 }

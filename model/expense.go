@@ -52,4 +52,5 @@ type GetExpenseListResponse struct {
 type UpdateExpenseRequest struct {
 	Id     int32  `path:"id"`
 	Status string `path:"status" validate:"required,oneof=reject approve"`
+	Notes  string `json:"notes"`
 }

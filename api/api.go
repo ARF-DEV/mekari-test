@@ -6,6 +6,7 @@ import (
 	"github.com/arf-dev/mekari-test/handler/authhandlr"
 	"github.com/arf-dev/mekari-test/handler/expensehandlr"
 	"github.com/arf-dev/mekari-test/handler/healthhandlr"
+	"github.com/arf-dev/mekari-test/repository/approvalrepo"
 	"github.com/arf-dev/mekari-test/repository/expenserepo"
 	"github.com/arf-dev/mekari-test/repository/userrepo"
 	"github.com/arf-dev/mekari-test/service/authsv"
@@ -21,9 +22,10 @@ type API struct {
 func New(config *config.Config, database *database.Database) *API {
 	userRepo := userrepo.New(database)
 	expenseRepo := expenserepo.New(database)
+	approvalRepo := approvalrepo.New(database)
 
 	authServ := authsv.New(config, userRepo)
-	expensServ := expensesv.New(config, expenseRepo)
+	expensServ := expensesv.New(config, expenseRepo, approvalRepo)
 
 	healthHandlr := healthhandlr.New()
 	authHandlr := authhandlr.New(authServ)

@@ -93,6 +93,11 @@ func (handler *Handler) HandleUpdateExpense(w http.ResponseWriter, r *http.Reque
 		response.Send(w, "", nil, apierror.ErrBadRequest)
 		return
 	}
+	if err := request.ParseRequestBody(r, &req); err != nil {
+		log.Log().Err(err).Msg("error when parsing UpdateExpenseRequest")
+		response.Send(w, "", nil, apierror.ErrBadRequest)
+		return
+	}
 
 	if err := validate.ValidateStruct(req); err != nil {
 		log.Log().Err(err).Msg("validation error on HandleUpdateExpense")
