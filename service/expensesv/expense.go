@@ -63,12 +63,13 @@ func (service *Service) GetExpenseList(ctx context.Context, req model.GetExpense
 func (service *Service) CreateExpense(ctx context.Context, req model.CreateExpenseRequest) (model.CreateExpenseResponseData, error) {
 	userData := ctxutils.GetUserDataFromCtx(ctx)
 	userId := userData.UserId
+
 	status := "pending"
 	isAutoApproved := false
 	now := timeNow()
 	processedAt := time.Time{} // zero value
 	if req.AmountIdr < 1000000 {
-		status = "approved"
+		status = "auto-approved"
 		isAutoApproved = true
 		processedAt = now
 	}
