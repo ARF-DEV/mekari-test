@@ -1,0 +1,294 @@
+basePath: /api
+definitions:
+  model.CreateExpenseRequest:
+    properties:
+      amount_idr:
+        maximum: 50000000
+        minimum: 10000
+        type: integer
+      description:
+        type: string
+      receipt_url:
+        type: string
+    required:
+    - amount_idr
+    - description
+    type: object
+  model.CreateExpenseResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.CreateExpenseResponseData'
+      message:
+        type: string
+    type: object
+  model.CreateExpenseResponseData:
+    properties:
+      amount_idr:
+        type: integer
+      auto_approved:
+        type: boolean
+      description:
+        type: string
+      id:
+        type: integer
+      requires_approval:
+        type: boolean
+      status:
+        type: string
+    type: object
+  model.Expense:
+    properties:
+      amount_idr:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      processed_at:
+        type: string
+      receipt_url:
+        type: string
+      status:
+        type: string
+      submitted_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  model.GetExpenseListResponse:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/model.Expense'
+        type: array
+      message:
+        type: string
+    type: object
+  model.GetExpenseResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.Expense'
+      message:
+        type: string
+    type: object
+  model.LoginRequest:
+    properties:
+      email:
+        type: string
+    type: object
+  model.LoginResponse:
+    properties:
+      code:
+        type: string
+      data:
+        type: string
+      message:
+        type: string
+    type: object
+  response.BaseResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+host: localhost:20000
+info:
+  contact: {}
+  description: This is a expense management API docs.
+  title: Expense Management API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      summary: User login
+      tags:
+      - auth
+  /expenses:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.GetExpenseListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Show list of expenses
+      tags:
+      - expenses
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateExpenseRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.CreateExpenseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Create an expense
+      tags:
+      - expenses
+  /expenses/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: expense id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.GetExpenseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Show expense's detail info
+      tags:
+      - expenses
+  /expenses/{id}/{status}:
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: expense id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: approve / reject
+        enum:
+        - approve
+        - reject
+        in: path
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.GetExpenseListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.BaseResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: approve/reject expense
+      tags:
+      - expenses
+securityDefinitions:
+  ApiKeyAuth:
+    description: Bearer token
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

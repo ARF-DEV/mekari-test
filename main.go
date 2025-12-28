@@ -26,14 +26,14 @@ func main() {
 	}
 
 	server := http.Server{
-		Addr:         ":" + env.PORT,
+		Addr:         ":20000",
 		Handler:      mux,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
 	runServer := func(errChan chan<- error) {
-		log.Log().Msgf("server running on port %s", env.PORT)
+		log.Log().Msgf("server running on port 20000")
 		if err := server.ListenAndServe(); err != http.ErrServerClosed {
 			errChan <- err
 		}

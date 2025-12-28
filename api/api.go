@@ -13,6 +13,17 @@ import (
 	"github.com/arf-dev/mekari-test/service/expensesv"
 )
 
+//	@title			Expense Management API
+//	@version		1.0
+//	@description	This is a expense management API docs.
+
+//	@host		localhost:20000
+//	@BasePath	/api
+
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
+// @description				Bearer token
 type API struct {
 	HealthCheckHandlr *healthhandlr.Handler
 	AuthHandlr        *authhandlr.Handler
