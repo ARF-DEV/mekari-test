@@ -6,6 +6,7 @@ import (
 	"github.com/arf-dev/mekari-test/handler/authhandlr"
 	"github.com/arf-dev/mekari-test/handler/expensehandlr"
 	"github.com/arf-dev/mekari-test/handler/healthhandlr"
+	"github.com/arf-dev/mekari-test/outbound/paymentob"
 	"github.com/arf-dev/mekari-test/repository/approvalrepo"
 	"github.com/arf-dev/mekari-test/repository/expenserepo"
 	"github.com/arf-dev/mekari-test/repository/userrepo"
@@ -35,8 +36,10 @@ func New(config *config.Config, database *database.Database) *API {
 	expenseRepo := expenserepo.New(database)
 	approvalRepo := approvalrepo.New(database)
 
+	paymentOutbound := paymentob.New(config)
+
 	authServ := authsv.New(config, userRepo)
-	expensServ := expensesv.New(config, expenseRepo, approvalRepo)
+	expensServ := expensesv.New(config, expenseRepo, approvalRepo, paymentOutbound)
 
 	healthHandlr := healthhandlr.New()
 	authHandlr := authhandlr.New(authServ)

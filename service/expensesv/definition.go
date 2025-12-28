@@ -18,3 +18,7 @@ type ApprovalRepository interface {
 	SelectOneApproval(ctx context.Context, id int32) (approval model.Approval, err error)
 	Update(ctx context.Context, id int32, updateFunc func(approval *model.Approval)) error
 }
+
+type PaymentOutbound interface {
+	DoPayment(ctx context.Context, paymentRequest model.PaymentRequest) error
+}
