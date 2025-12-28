@@ -86,11 +86,21 @@ func (service *Service) CreateExpense(ctx context.Context, req model.CreateExpen
 		},
 	)
 	if err != nil {
-		log.Log().Err(err).Msgf("error on CreateExpense.Insert")
+		log.Log().Err(err).Msgf("error on CreateExpense.expenseRepo.Insert")
 		return model.CreateExpenseResponseData{}, err
 	}
 
 	if isAutoApproved {
+		if _, err = service.approvalRepo.Insert(ctx, model.Approval{
+			ExpenseId:  expense.Id,
+			ApproverId: nil,
+			Status:     status,
+			CreatedAt:  timeNow(),
+			Notes:      "auto approved",
+		}); err != nil {
+			log.Log().Err(err).Msgf("error on CreateExpense.approvalRepo.Insert")
+			return model.CreateExpenseResponseData{}, err
+		}
 		go service.processedPayment(ctx, expense.Id, expense.AmountIdr)
 	}
 
@@ -134,7 +144,7 @@ func (service *Service) UpdateExpense(ctx context.Context, req model.UpdateExpen
 
 	if _, err = service.approvalRepo.Insert(ctx, model.Approval{
 		ExpenseId:  expense.Id,
-		ApproverId: userData.UserId,
+		ApproverId: &userData.UserId,
 		Status:     status,
 		CreatedAt:  timeNow(),
 		Notes:      req.Notes,

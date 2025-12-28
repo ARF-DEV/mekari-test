@@ -40,6 +40,7 @@ func Send(w http.ResponseWriter, message string, body ResponseBody, err error) {
 	base.Code = code
 
 	bodyJson, _ := json.Marshal(body)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	w.Write(bodyJson)
 }
