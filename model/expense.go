@@ -23,6 +23,10 @@ type CreateExpenseRequest struct {
 	ReceiptUrl  string `json:"receipt_url"`
 }
 
+func (request *CreateExpenseRequest) IsAutoApproved() bool {
+	return request.AmountIdr < 1000000
+}
+
 type CreateExpenseResponse struct {
 	response.BaseResponse
 	Data CreateExpenseResponseData `json:"data"`

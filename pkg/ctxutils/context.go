@@ -1,12 +1,18 @@
 package ctxutils
 
-import "context"
+import (
+	"context"
+)
 
 type userDataKey struct{}
 type UserData struct {
 	UserId int32
 	Email  string
 	Role   string
+}
+
+func (data *UserData) IsManager() bool {
+	return data.Role == "manager"
 }
 
 func CtxWithUserData(ctx context.Context, data UserData) context.Context {

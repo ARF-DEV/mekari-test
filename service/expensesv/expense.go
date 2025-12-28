@@ -48,7 +48,14 @@ func (service *Service) GetExpense(ctx context.Context, req model.GetExpenseRequ
 }
 
 func (service *Service) GetExpenseList(ctx context.Context, req model.GetExpenseListRequest) (resp model.GetExpenseListResponse, err error) {
-	expenses, err := service.expenseRepo.SelectExpense(ctx, req.Page, req.Size, req.Status)
+	var userId *int32 = nil
+
+	userData := ctxutils.GetUserDataFromCtx(ctx)
+	if userData.IsManager() {
+		userId = &userData.UserId
+	}
+
+	expenses, err := service.expenseRepo.SelectExpense(ctx, req.Page, req.Size, req.Status, userId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return resp, apierror.ErrResourceNotFound
@@ -65,10 +72,11 @@ func (service *Service) CreateExpense(ctx context.Context, req model.CreateExpen
 	userId := userData.UserId
 
 	status := "pending"
-	isAutoApproved := false
 	now := timeNow()
 	processedAt := time.Time{} // zero value
-	if req.AmountIdr < 1000000 {
+
+	isAutoApproved := req.IsAutoApproved()
+	if isAutoApproved {
 		status = "auto-approved"
 		isAutoApproved = true
 		processedAt = now
