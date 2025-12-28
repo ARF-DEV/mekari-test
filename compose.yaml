@@ -1,0 +1,13 @@
+services:
+  ems-api:
+    build: .
+    ports:
+      - 20000:20000
+    env_file: 
+      - ".env"
+    networks:
+      - ems-api-net
+
+networks:
+  ems-api-net:
+    name: ems-api-net
