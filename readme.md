@@ -49,4 +49,62 @@ docker compose up --build -d
 
 
 ## API Docs
-once the API run successfully, the API docs can access using in http://localhost:20000/docs/index.html this will open the swagger docs for the API.
+once the API is running, the API docs can access using in http://localhost:20000/docs/index.html this will open the swagger docs for the API.
+
+## Architecture decisions and trade-offs 
+Pretty much follow the data models that the test gave me:
+```
+Users (id, email, name, role, created_at)
+Expenses (id, user_id, amount_idr, description, receipt_url, status, submitted_at, processed_at)
+Approvals (id, expense_id, approver_id, status, notes, created_at)
+```
+While I pretty much follow this data model to the tee. I do have some opinion on how this can be improved (maybe) which i will cover in the **Assumptions & what to improve** sections
+
+
+## Business rules implementation explanation
+The business rules I do is pretty much the Access Control and the auto approve Threshold
+
+### Access Control
+For the access control, there are checks on routes layer and services layer.
+on the routes layer I created a RBAC middleware to block user that is not fulfill the required role.
+
+The other checks is in service layer. This one i use simple checks if the user is manager then, show all expense if not show only user's expenses.
+**example line in service/expensesv/expense.go line 58**
+```go
+userData := ctxutils.GetUserDataFromCtx(ctx)
+if !userData.IsManager() {
+	userId = &userData.UserId
+}
+```
+
+### Auto-approve Threshold
+This is the same as access control on service level, its a simple checks if this is an auto approved case or not.
+**example line in service/expensesv/expense.go line 79**
+```go
+status := "pending"
+now := timeNow()
+processedAt := time.Time{} // zero value
+
+isAutoApproved := req.IsAutoApproved()
+if isAutoApproved {
+    status = "auto-approved"
+    isAutoApproved = true
+    processedAt = now
+}
+```
+
+## Assumptions & what to improve
+there are some assumptions I made along the way, and I had it written down in my notes, So I'm just going to copy that here and add some more:
+- there is only 2 role: user and manager
+- expenses status : rejected, pending, approved, auto-approved
+- completed will be on separate column
+- login only by email
+- completed status is a bit confusing (how are we going to filter by approved and auto-approved if in the end the status will be completed) and since I don't think there any use of it on the FE, I'm going ignore it for now
+- approvals status : rejected, approved, auto-approved
+
+as you can see the completed status is a bit confusing to me, so i ignore it. 
+there is some solutions that I've thought of but there also some trade offs to it, for example:
+
+1. We can store status on both expenses and approvals instead just expenses and update only expense status to "complete" once the payment is done. But in turn **for each list request with (or without if not handled) filter you would need to join expenses and approvals** to find if its on pending, rejected, approved or auto-approved
+
+2. this is the answer to what I would do if I have more time, I think its better to just create a new column called **is_payment_complete as a bool or a vartext(50) or something like that**. Since I don't think the value have any use for the test in the frontend side (cmiiw), but I do understand the need to at least store it.
