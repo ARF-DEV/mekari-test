@@ -49,7 +49,7 @@ func (service *Service) GetExpenseList(ctx context.Context, req model.GetExpense
 	var userId *int32 = nil
 
 	userData := ctxutils.GetUserDataFromCtx(ctx)
-	if userData.IsManager() {
+	if !userData.IsManager() {
 		userId = &userData.UserId
 	}
 

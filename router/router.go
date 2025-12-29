@@ -36,25 +36,17 @@ func New(config *config.Config) (*chi.Mux, error) {
 		})
 		r.Group(func(r chi.Router) {
 			r.Use(middlewareManager.Authenticate)
-			// testing
-			r.Get("/health/auth", api.HealthCheckHandlr.Ping)
-
 			r.Get("/expenses", api.ExpenseHandlr.HandleGetExpenseList)
 			r.Get("/expenses/{id}", api.ExpenseHandlr.HandleGetExpense)
 			r.Post("/expenses", api.ExpenseHandlr.HandleCreateExpense)
 
 			r.Group(func(r chi.Router) {
 				r.Use(middlewareManager.AccessWithRole("user"))
-				// endpoint for testing perpose
-				r.Get("/health/auth/user", api.HealthCheckHandlr.Ping)
 			})
 			r.Group(func(r chi.Router) {
 				r.Use(middlewareManager.AccessWithRole("manager"))
-				// endpoint for testing perpose
-				r.Get("/health/auth/manager", api.HealthCheckHandlr.Ping)
 				r.Put("/expenses/{id}/{status}", api.ExpenseHandlr.HandleUpdateExpense)
 			})
-			// expenses (private)
 		})
 	})
 	printEndpoints(chiMux)

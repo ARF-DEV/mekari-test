@@ -82,6 +82,7 @@ func (repo *Repository) SelectOneExpense(ctx context.Context, id int32) (expense
 }
 
 func (repo *Repository) SelectExpense(ctx context.Context, page, size int64, status string, userId *int32) (expenses []model.Expense, err error) {
+	expenses = []model.Expense{}
 	builder := squirrel.Select(
 		"id",
 		"user_id",
