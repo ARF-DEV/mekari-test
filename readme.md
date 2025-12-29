@@ -107,7 +107,7 @@ there is some solutions that I've thought of but there also some trade offs to i
 
 1. We can store status on both expenses and approvals instead just expenses and update only expense status to "complete" once the payment is done. But in turn **for each list request with (or without if not handled) filter you would need to join expenses and approvals** to find if its on pending, rejected, approved or auto-approved
 
-2. I think its better to just create a new column called **is_payment_complete as a bool or a vartext(50) or something like that**. Since I don't think the value have any use for the test in the frontend side (cmiiw), but I do understand the need to at least store it. The trade-off of this probably more data to store. Imho, I would prefer this approach.
+2. I think its better to just create a new column called **is_payment_complete as a bool or a vartext(50) or something like that**. Since I don't think the value have any use for the test in the frontend side (cmiiw), but I do understand the need to at least store it. The trade-off of this probably more data to store. Imho, I prefer this approach.
 
 as to what other things I would do if i had more time, probably refactoring the router layer, I feel it can be split up a bit more, and also I haven't add indexing yet to the tabels since I didn't know what indexes I need when starting the project.
 
