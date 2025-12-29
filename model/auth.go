@@ -7,7 +7,7 @@ import (
 )
 
 type LoginRequest struct {
-	Email string `json:"email"`
+	Email string `json:"email" example:"test@gmail.com"`
 }
 
 type LoginResponse struct {

@@ -268,13 +268,21 @@ const docTemplate = `{
                         "name": "status",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "request body",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/model.UpdateExpenseRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.GetExpenseListResponse"
+                            "$ref": "#/definitions/response.BaseResponse"
                         }
                     },
                     "400": {
@@ -310,13 +318,16 @@ const docTemplate = `{
                 "amount_idr": {
                     "type": "integer",
                     "maximum": 50000000,
-                    "minimum": 10000
+                    "minimum": 10000,
+                    "example": 3000000
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "employee salary"
                 },
                 "receipt_url": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "http://test.com/test.png"
                 }
             }
         },
@@ -338,22 +349,28 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "amount_idr": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 3000000
                 },
                 "auto_approved": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": false
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "employee salary"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "requires_approval": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": true
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "pending"
                 }
             }
         },
@@ -421,7 +438,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "test@gmail.com"
                 }
             }
         },
@@ -436,6 +454,15 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "model.UpdateExpenseRequest": {
+            "type": "object",
+            "properties": {
+                "notes": {
+                    "type": "string",
+                    "example": "sy tdk percaya, bohong kamu yh"
                 }
             }
         },

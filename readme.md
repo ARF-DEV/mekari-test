@@ -46,3 +46,7 @@ then you can run the program using docker compose
 ```bash
 docker compose up --build -d
 ```
+
+
+## API Docs
+once the API run successfully, the API docs can access using in http://localhost:20000/docs/index.html this will open the swagger docs for the API.

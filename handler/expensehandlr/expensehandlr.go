@@ -122,9 +122,8 @@ func (handler *Handler) HandleGetExpenseList(w http.ResponseWriter, r *http.Requ
 		req.Page = 1
 	}
 	if req.Size == 0 {
-		req.Page = 20
+		req.Size = 20
 	}
-
 	resp, err := handler.expenseServ.GetExpenseList(r.Context(), req)
 	if err != nil {
 		response.Send(w, "", nil, err)
@@ -140,9 +139,10 @@ func (handler *Handler) HandleGetExpenseList(w http.ResponseWriter, r *http.Requ
 //	@Accept		json
 //	@Produce	json
 //	@Security	ApiKeyAuth
-//	@Param		id		path		integer	true	"expense id"
-//	@Param		status	path		string	true	"approve / reject"	Enums(approve, reject)
-//	@Success	200		{object}	model.BaseResponse
+//	@Param		id		path		integer						true	"expense id"
+//	@Param		status	path		string						true	"approve / reject"	Enums(approve, reject)
+//	@Param		request	body		model.UpdateExpenseRequest	false	"request body"
+//	@Success	200		{object}	response.BaseResponse
 //	@Failure	400		{object}	response.BaseResponse
 //	@Failure	404		{object}	response.BaseResponse
 //	@Failure	500		{object}	response.BaseResponse

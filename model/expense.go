@@ -18,9 +18,9 @@ type Expense struct {
 }
 
 type CreateExpenseRequest struct {
-	AmountIdr   int64  `json:"amount_idr" validate:"required,gte=10000,lte=50000000"`
-	Description string `json:"description" validate:"required"`
-	ReceiptUrl  string `json:"receipt_url"`
+	AmountIdr   int64  `json:"amount_idr" validate:"required,gte=10000,lte=50000000" example:"3000000"`
+	Description string `json:"description" validate:"required" example:"employee salary"`
+	ReceiptUrl  string `json:"receipt_url" example:"http://test.com/test.png"`
 }
 
 func (request *CreateExpenseRequest) IsAutoApproved() bool {
@@ -33,16 +33,16 @@ type CreateExpenseResponse struct {
 }
 
 type CreateExpenseResponseData struct {
-	Id               int32  `json:"id"`
-	AmountIdr        int64  `json:"amount_idr"`
-	Description      string `json:"description"`
-	Status           string `json:"status"`
-	RequiresApproval bool   `json:"requires_approval"`
-	AutoApproved     bool   `json:"auto_approved"`
+	Id               int32  `json:"id" example:"1"`
+	AmountIdr        int64  `json:"amount_idr" example:"3000000"`
+	Description      string `json:"description" example:"employee salary"`
+	Status           string `json:"status" example:"pending"`
+	RequiresApproval bool   `json:"requires_approval" example:"true"`
+	AutoApproved     bool   `json:"auto_approved" example:"false"`
 }
 
 type GetExpenseRequest struct {
-	Id int32 `path:"id"`
+	Id int32 `path:"id" example:"1"`
 }
 
 type GetExpenseResponse struct {
@@ -62,7 +62,7 @@ type GetExpenseListResponse struct {
 }
 
 type UpdateExpenseRequest struct {
-	Id     int32  `path:"id"`
-	Status string `path:"status" validate:"required,oneof=reject approve"`
-	Notes  string `json:"notes"`
+	Id     int32  `path:"id" swaggerignore:"true"`
+	Status string `path:"status" validate:"required,oneof=reject approve" swaggerignore:"true"`
+	Notes  string `json:"notes" example:"sy tdk percaya, bohong kamu yh"`
 }
