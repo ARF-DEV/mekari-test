@@ -11,3 +11,4 @@ services:
 networks:
   ems-api-net:
     name: ems-api-net
+    external: true

@@ -39,8 +39,8 @@ this will initialized all tables on the database
 
 ### Running the API
 from the project root, copy the `example.env` to `.env` and fill the env with value.
-Note [1]: for DB_MASTER you can use `postgres://<POSTGRES_USER>:<POSTGRES_PASSWORD>M@ems-db:5432/<POSTGRES_DB>?sslmode=disable`, same as the migration one but the host is `ems-db` instead of `localhost`
-Note [2]: for PAYMENT_GATEWAY_URL use the base url of the Payment processor mock from the test
+Note [1]: for DB_MASTER you can use `postgres://<POSTGRES_USER>:<POSTGRES_PASSWORD>@ems-db:5432/<POSTGRES_DB>?sslmode=disable`, same as the migration one but the host is `ems-db` instead of `localhost`
+Note [2]: for PAYMENT_GATEWAY_URL use the base url of the Payment processor mock from the test **without the trailing /**
 
 then you can run the program using docker compose
 ```bash
