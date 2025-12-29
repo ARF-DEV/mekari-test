@@ -33,6 +33,8 @@ func New(config *config.Config, expenseRepo ExpenseRepository, approvalRepo Appr
 }
 
 func (service *Service) GetExpense(ctx context.Context, req model.GetExpenseRequest) (resp model.GetExpenseResponse, err error) {
+	userData := ctxutils.GetUserDataFromCtx(ctx)
+
 	expense, err := service.expenseRepo.SelectOneExpense(ctx, req.Id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -41,6 +43,11 @@ func (service *Service) GetExpense(ctx context.Context, req model.GetExpenseRequ
 		log.Log().Err(err).Msg("error on GetExpense.SelectOneExpense")
 		return resp, apierror.ErrInternalServer
 	}
+
+	if !userData.IsManager() && expense.UserId != userData.UserId {
+		return resp, apierror.ErrUnauthorized
+	}
+
 	resp.Data = expense
 	return resp, nil
 }
